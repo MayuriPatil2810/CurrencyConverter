@@ -1,28 +1,47 @@
-console.log("Main.js working")
+const currency_type = document.querySelectorAll(".currency_type");
+const convert = document.getElementById('convert');
+const amount = document.getElementById('amount');
+const result = document.getElementById('result');
+console.log(amount.value);
+// Fetching data from API
+fetch("https://api.frankfurter.app/currencies")
+    .then((data) => data.json())
+    .then((data) => {
+        display(data);
+    });
 
-const populate = async (value, currency) => {
-    let myStr = ""
-    url = "https://api.currencyapi.com/v3/latest?apikey=cur_live_7UStkUqQNBmahSoy8K635tE3Sjr5fK1UVPmVloZ2&base_currency=" + currency
-    let response = await fetch(url)
-    let rJson = await response.json()
-    document.querySelector(".output").style.display = "block"
-
-    for (let key of Object.keys(rJson["data"])) {
-        myStr += ` <tr>
-                        <td>${key}</td>
-                        <td>${rJson["data"][key]["code"]}</td>
-                        <td>${Math.round(rJson["data"][key]["value"] * value)}</td>
-                    </tr> 
-                `
+// display function 
+function display(data) {
+    const entries = Object.entries(data);
+    for (var x = 0; x < entries.length; x++) {
+        currency_type[0].innerHTML += `<option value="${entries[x][0]}">${entries[x][0]}</option>`;
+        currency_type[1].innerHTML += `<option value="${entries[x][0]}">${entries[x][0]}</option>`;
     }
-    const tableBody = document.querySelector("tbody");
-    tableBody.innerHTML = myStr;
-
 }
-const btn = document.querySelector(".btn")
-btn.addEventListener("click", (e) => {
-    e.preventDefault()
-    const value = parseInt(document.querySelector("input[name='quantity']").value);
-    const currency = document.querySelector("select[name='currency']").value
-    populate(value, currency)
-})
+
+// onclick convert button function
+convert.addEventListener("click", () => {
+    let currency_type1 = currency_type[0].value;
+    let currency_type2 = currency_type[1].value;
+    let amt_value = amount.value;
+
+    if (currency_type1 != currency_type2) {
+        convert_amt(currency_type1, currency_type2, amt_value);
+    }
+    else {
+        alert("Choose Different Currency Type !!");
+    }
+});
+
+// covert_amt function
+function convert_amt(currency_type1, currency_type2, amt_value) {
+    const host = "api.frankfurter.app";
+    fetch(
+        `https://${host}/latest?amount=${amt_value}&from=${currency_type1}&to=${currency_type2}`
+    )
+        .then((val) => val.json())
+        .then((val) => {
+            console.log(Object.values(val.rates)[0]);
+            result.value = Object.values(val.rates)[0];
+        });
+}
